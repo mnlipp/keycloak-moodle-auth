@@ -1,0 +1,4 @@
+
+rootProject.name = 'keycloak-moodle-auth'
+
+include('org.jdrupes.keycloak.moodleauth')
