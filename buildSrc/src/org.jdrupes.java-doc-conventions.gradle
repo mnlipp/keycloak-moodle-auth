@@ -1,3 +1,21 @@
+/*
+ * This file is part of the Keycloak Moodle authenticator
+ * Copyright (C) 2024 Michael N. Lipp
+ *
+ * This program is free software; you can redistribute it and/or modify it 
+ * under the terms of the GNU Lesser General Public License as published
+ * by the Free Software Foundation; either version 3 of the License, or 
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful, but 
+ * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public 
+ * License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License along 
+ * with this program; if not, see <http://www.gnu.org/licenses/>.
+ */
+
 plugins {
     // Apply the common versioning conventions.
     id 'org.jdrupes.versioning-conventions'
@@ -121,16 +139,15 @@ gitPublish {
     branch = 'main'
     contents {
         from("${rootProject.projectDir}/webpages") {
-            include '_layouts/vm-operator.html'
+            include '_layouts/keycloak-moodle-auth.html'
             include 'keycloak-moodle-auth/**'
         }
         from("${rootProject.buildDir}/javadoc") {
-            into 'vm-operator/javadoc'
+            into 'keycloak-moodle-auth/javadoc'
         }
-        if (!findProject(':org.jdrupes.vmoperator.runner.qemu').isSnapshot
-                && !findProject(':org.jdrupes.vmoperator.manager').isSnapshot) {
+        if (!findProject(':org.jdrupes.keycloak.moodleauth').isSnapshot) {
             from("${rootProject.buildDir}/javadoc") {
-                into 'vm-operator/latest-release/javadoc'
+                into 'keycloak-moodle-auth/latest-release/javadoc'
             }
         }
     }

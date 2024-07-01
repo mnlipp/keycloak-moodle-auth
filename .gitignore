@@ -13,3 +13,5 @@ org.eclipse.jdt.core.prefs
 
 # Node
 **/node_modules/
+/moodle-realm.json
+/target/
