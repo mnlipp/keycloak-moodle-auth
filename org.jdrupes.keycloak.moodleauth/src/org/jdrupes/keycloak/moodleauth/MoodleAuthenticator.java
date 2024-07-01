@@ -19,11 +19,22 @@
 package org.jdrupes.keycloak.moodleauth;
 
 import jakarta.ws.rs.core.MultivaluedMap;
+import java.io.IOException;
+import java.util.Optional;
+import org.jdrupes.keycloak.moodleauth.moodle.MoodleServiceProvider;
+import org.jdrupes.keycloak.moodleauth.moodle.model.MoodleUser;
+import org.jdrupes.keycloak.moodleauth.moodle.service.MoodleAuthFailedException;
+import org.jdrupes.keycloak.moodleauth.moodle.service.MoodleClient;
+import org.jdrupes.keycloak.moodleauth.moodle.service.Password;
 import org.keycloak.authentication.AuthenticationFlowContext;
+import org.keycloak.authentication.AuthenticationFlowError;
 import org.keycloak.authentication.Authenticator;
+import org.keycloak.forms.login.LoginFormsProvider;
+import org.keycloak.models.AuthenticatorConfigModel;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.UserModel;
+import org.keycloak.models.UserProvider;
 import org.keycloak.services.ServicesLogger;
 
 /**
@@ -87,7 +98,7 @@ public class MoodleAuthenticator implements Authenticator {
      */
     @Override
     public void authenticate(AuthenticationFlowContext context) {
-        var challenge = context.form().createForm("moodle-login.ftl");
+        var challenge = formsProvider(context).createForm("moodle-login.ftl");
         context.challenge(challenge);
     }
 
@@ -106,8 +117,80 @@ public class MoodleAuthenticator implements Authenticator {
             context.cancelLogin();
             return;
         }
-        var userProvider = context.getSession().users();
 
-        // userProvider.addUser(context.getRealm(), "test");
+        // Get Moodle Service
+        String moodleUrl = Optional.ofNullable(context.getAuthenticatorConfig())
+            .map(AuthenticatorConfigModel::getConfig)
+            .map(m -> m.get(MoodleAuthenticatorFactory.MOODLE_URL)).orElse("");
+        if (moodleUrl.isEmpty()) {
+            var challenge = formsProvider(context).setError("missingMoodleUrl")
+                .createForm("moodle-login.ftl");
+            context.failureChallenge(
+                AuthenticationFlowError.IDENTITY_PROVIDER_ERROR, challenge);
+            log.error("Moodle URL not configured.");
+            return;
+        }
+        var moodleServiceProvider = new MoodleServiceProvider();
+        var username = formData.getFirst("username");
+        try (var moodleClient = moodleServiceProvider.connect(moodleUrl,
+            username,
+            new Password(formData.getFirst("password").toCharArray()))) {
+
+            // Valid user, check if exists
+            var userProvider = context.getSession().users();
+            var kcUser = Optional.ofNullable(userProvider
+                .getUserByUsername(context.getRealm(), username))
+                .orElseGet(() -> createUser(context, userProvider, username,
+                    moodleClient));
+            context.setUser(kcUser);
+            context.success();
+        } catch (IOException e) {
+            var challenge
+                = formsProvider(context).setError("temoraryMoodleFailure")
+                    .createForm("moodle-login.ftl");
+            context.failureChallenge(
+                AuthenticationFlowError.IDENTITY_PROVIDER_ERROR, challenge);
+            return;
+        } catch (MoodleAuthFailedException e) {
+            var challenge = formsProvider(context)
+                .setError("invalidUserMessage").createForm("moodle-login.ftl");
+            context.failureChallenge(
+                AuthenticationFlowError.INVALID_CREDENTIALS, challenge);
+            return;
+        }
     }
+
+    private UserModel createUser(AuthenticationFlowContext context,
+            UserProvider userProvider, String username,
+            MoodleClient moodleClient) {
+        MoodleUser moodleUser = moodleClient.moodleUser();
+        var kcUser = userProvider.addUser(context.getRealm(), username);
+        kcUser.setEnabled(true);
+        kcUser.setEmail(moodleUser.getEmail());
+        kcUser.setEmailVerified(true);
+        var siteInfo = moodleClient.siteInfo();
+        if (moodleUser.getFirstname() != null
+            && !moodleUser.getFirstname().isBlank()) {
+            kcUser.setFirstName(moodleUser.getFirstname());
+        } else {
+            kcUser.setFirstName(siteInfo.getFirstname());
+        }
+        if (moodleUser.getLastname() != null
+            && !moodleUser.getLastname().isBlank()) {
+            kcUser.setLastName(moodleUser.getLastname());
+        } else {
+            kcUser.setLastName(siteInfo.getLastname());
+        }
+        return kcUser;
+    }
+
+    private LoginFormsProvider
+            formsProvider(AuthenticationFlowContext context) {
+        LoginFormsProvider form = context.form();
+        var moodleUrl = context.getAuthenticatorConfig().getConfig()
+            .get(MoodleAuthenticatorFactory.MOODLE_URL);
+        form.setAttribute(MoodleAuthenticatorFactory.MOODLE_URL, moodleUrl);
+        return form;
+    }
+
 }

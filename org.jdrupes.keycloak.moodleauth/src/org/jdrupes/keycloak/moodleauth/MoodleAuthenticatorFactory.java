@@ -29,6 +29,7 @@ import org.keycloak.provider.ProviderConfigProperty;
 
 public class MoodleAuthenticatorFactory implements AuthenticatorFactory {
 
+    /* default */ static final String MOODLE_URL = "moodleUrl";
     private static final String TYPE = "delegator";
     private static final String PROVIDER_ID = "org.jdrupes.keycloak.moodleauth";
     private static final MoodleAuthenticator SINGLETON
@@ -94,7 +95,7 @@ public class MoodleAuthenticatorFactory implements AuthenticatorFactory {
 
     @Override
     public List<ProviderConfigProperty> getConfigProperties() {
-        return List.of(new ProviderConfigProperty("moodleUrl", "Moodle URL",
+        return List.of(new ProviderConfigProperty(MOODLE_URL, "Moodle URL",
             "The URL of the Moodle instance",
             ProviderConfigProperty.STRING_TYPE, ""));
     }
