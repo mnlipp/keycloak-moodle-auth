@@ -34,7 +34,6 @@ import org.keycloak.models.AuthenticatorConfigModel;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.UserModel;
-import org.keycloak.models.UserProvider;
 import org.keycloak.services.ServicesLogger;
 
 /**
@@ -136,13 +135,18 @@ public class MoodleAuthenticator implements Authenticator {
             username,
             new Password(formData.getFirst("password").toCharArray()))) {
 
-            // Valid user, check if exists
+            // Create non-existant user and update.
             var userProvider = context.getSession().users();
-            var kcUser = Optional.ofNullable(userProvider
+            var user = Optional.ofNullable(userProvider
                 .getUserByUsername(context.getRealm(), username))
-                .orElseGet(() -> createUser(context, userProvider, username,
-                    moodleClient));
-            context.setUser(kcUser);
+                .orElseGet(() -> {
+                    var data
+                        = userProvider.addUser(context.getRealm(), username);
+                    data.setEnabled(true);
+                    return data;
+                });
+            updateUser(context, user, moodleClient);
+            context.setUser(user);
             context.success();
         } catch (IOException e) {
             var challenge
@@ -160,12 +164,9 @@ public class MoodleAuthenticator implements Authenticator {
         }
     }
 
-    private UserModel createUser(AuthenticationFlowContext context,
-            UserProvider userProvider, String username,
-            MoodleClient moodleClient) {
+    private UserModel updateUser(AuthenticationFlowContext context,
+            UserModel kcUser, MoodleClient moodleClient) {
         MoodleUser moodleUser = moodleClient.moodleUser();
-        var kcUser = userProvider.addUser(context.getRealm(), username);
-        kcUser.setEnabled(true);
         kcUser.setEmail(moodleUser.getEmail());
         kcUser.setEmailVerified(true);
         var siteInfo = moodleClient.siteInfo();
