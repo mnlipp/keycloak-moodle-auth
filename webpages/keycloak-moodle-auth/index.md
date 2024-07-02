@@ -12,7 +12,7 @@ This project provides a Keycloak extension that uses a
 [Moodle](https://moodle.org/) instance for authentication
 (and registration).
 
-Not that this extension probably shouldn't exist. You need it only
+Note that this extension probably shouldn't exist. You need it only
 if you require an OIDC provider for some application (OIDC being
 supported by most systems nowadays) and one of the following reasons
 apply:
