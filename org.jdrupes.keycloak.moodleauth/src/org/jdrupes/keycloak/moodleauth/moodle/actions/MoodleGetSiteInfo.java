@@ -21,7 +21,6 @@ package org.jdrupes.keycloak.moodleauth.moodle.actions;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.Map;
-
 import org.jdrupes.keycloak.moodleauth.moodle.RestAction;
 import org.jdrupes.keycloak.moodleauth.moodle.RestClient;
 import org.jdrupes.keycloak.moodleauth.moodle.model.MoodleSiteInfo;
