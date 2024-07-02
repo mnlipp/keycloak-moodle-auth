@@ -25,9 +25,14 @@ dependencies {
     implementation 'org.keycloak:keycloak-server-spi:25.0.0'
 }
 
-println 'build/libs/' + project.name + '-' + project.version
+task cleanTarget(type: Delete) {
+    delete fileTree(rootProject.file("target")).matching {
+        include "*"
+    }
+}
 
 task deploy(type: Copy) {
+    dependsOn cleanTarget
     dependsOn jar
     from 'build/libs/' + project.name + '-' + project.version + '.jar'
     into rootProject.file("target/")
