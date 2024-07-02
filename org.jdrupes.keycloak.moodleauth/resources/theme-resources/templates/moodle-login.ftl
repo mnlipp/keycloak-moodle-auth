@@ -44,31 +44,17 @@
           </div>
 
           <div class="${properties.kcFormGroupClass!} ${properties.kcFormSettingClass!}">
-              <div id="kc-form-options">
-                  <#if realm.rememberMe && !usernameHidden??>
-                      <div class="checkbox">
-                          <label>
-                              <#if login.rememberMe??>
-                                  <input tabindex="5" id="rememberMe" name="rememberMe" type="checkbox" checked> ${msg("rememberMe")}
-                              <#else>
-                                  <input tabindex="5" id="rememberMe" name="rememberMe" type="checkbox"> ${msg("rememberMe")}
-                              </#if>
-                          </label>
-                      </div>
-                  </#if>
-                  </div>
-                  <div class="${properties.kcFormOptionsWrapperClass!}">
-                      <#if realm.resetPasswordAllowed>
-                          <span><a tabindex="6" href="${url.loginResetCredentialsUrl}">${msg("doForgotPassword")}</a></span>
-                      </#if>
-                  </div>
-
+            <div class="${properties.kcFormOptionsWrapperClass!}">
+                <#if realm.resetPasswordAllowed>
+                    <span><a tabindex="6" href="${url.loginResetCredentialsUrl}">${msg("doForgotPassword")}</a></span>
+                </#if>
             </div>
+          </div>
 
-            <div id="kc-form-buttons" class="${properties.kcFormGroupClass!}">
-                <input type="hidden" id="id-hidden-input" name="credentialId" <#if auth.selectedCredential?has_content>value="${auth.selectedCredential}"</#if>/>
-                <input tabindex="7" class="${properties.kcButtonClass!} ${properties.kcButtonPrimaryClass!} ${properties.kcButtonBlockClass!} ${properties.kcButtonLargeClass!}" name="login" id="kc-login" type="submit" value="${msg("doLogIn")}"/>
-            </div>
+          <div id="kc-form-buttons" class="${properties.kcFormGroupClass!}">
+              <input type="hidden" id="id-hidden-input" name="credentialId" <#if auth.selectedCredential?has_content>value="${auth.selectedCredential}"</#if>/>
+              <input tabindex="7" class="${properties.kcButtonClass!} ${properties.kcButtonPrimaryClass!} ${properties.kcButtonBlockClass!} ${properties.kcButtonLargeClass!}" name="login" id="kc-login" type="submit" value="${msg("doLogIn")}"/>
+          </div>
         </form>
       </div>
     </div>
