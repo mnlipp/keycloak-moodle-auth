@@ -64,7 +64,7 @@ public class MoodleUserByName extends RestAction {
     /**
      * Invoke the action.
      *
-     * @param shortName the short name
+     * @param userName the user name
      * @return the moodle course
      * @throws IOException Signals that an I/O exception has occurred.
      */

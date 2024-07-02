@@ -78,7 +78,6 @@ public class RestClient implements AutoCloseable {
      * Instantiates a new rest client.
      *
      * @param uri the uri
-     * @param defaultParams the default params
      */
     public RestClient(URI uri) {
         this(uri, Collections.emptyMap());
