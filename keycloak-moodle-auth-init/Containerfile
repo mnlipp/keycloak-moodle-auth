@@ -1,0 +1,7 @@
+FROM docker.io/alpine:3.19
+
+RUN apk update
+
+COPY target/* /opt/keycloak-moodle-auth/
+
+CMD ["sh", "-c", "cp /opt/keycloak-moodle-auth/* /opt/keycloak/providers/"]
